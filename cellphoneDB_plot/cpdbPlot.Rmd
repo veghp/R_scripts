@@ -1,0 +1,64 @@
+---
+title: "Plot CellPhoneDB results"
+output:
+  html_document:
+    df_print: paged
+---
+
+This notebook shows how to plot CellPhoneDB results, using the results from the  example files at https://www.cellphonedb.org/explore-sc-rna-seq.
+
+Load required functions and libraries:
+```{r}
+library("ggplot2")
+path.functions <- "R"
+source(file.path(path.functions, "rlTableFromVectors.R"))
+source(file.path(path.functions, "cpdbConvertPvalues.R"))
+source(file.path(path.functions, "cpdbGetResults.R"))
+source(file.path(path.functions, "plotInteractions.R"))
+source(file.path(path.functions, "convertResults.R"))
+```
+
+```{r}
+path.results <- "results"
+pvalues.txt <- file.path(path.results, "pvalues.txt")
+significant_means.txt <- file.path(path.results, "significant_means.txt")
+gene.csv <- "gene.csv" # needed for deconvoluting interactions: https://www.cellphonedb.org/downloads/gene.csv
+compared.celltypes <- rlTableFromVectors(c("NKcells_0", "NKcells_1", "Myeloid", "Tcells"), c("NKcells_0", "NKcells_1", "Myeloid", "Tcells"))
+compared.celltypes
+```
+
+Put p-value data into a different format:
+```{r}
+converted.pvalues <- convertPvalues(pvalues.txt, compared.celltypes, gene.csv, verbose = T)
+```
+Extract results from the CellPhoneDB output file:
+```{r}
+cpdb.results <- cpdbGetResults(significant_means.txt, converted.pvalues, compared.celltypes, gene.csv, verbose = F)
+saveRDS(cpdb.results, file = "cpdb.results.RDS")
+```
+Plot and save interactions. We get a nice plot if we use approximately the following proportions:
+```{r}
+p <- plotInteractions(cpdb.results)
+width <- 200 + 20 * length(unique(cpdb.results$Cellpairs))
+height <- 150 + 20 * length(unique(cpdb.results$Interactions))
+png(filename = "interactions.png", width = width, height = height)
+p
+dev.off()
+pdf(file = "interactions.pdf", width = width / 100, height = height / 100)
+p
+dev.off()
+```
+
+#![Interactions](interactions.png)
+
+------
+Finally, we convert the results into gene names and write to file. Be warned that this may contain duplicates, for example, the receptor-ligand interaction between the genes FLT1 and VEGFA is listed in the database as FLT1_VEGFA and as FLT1 complex_VEGFA, and each interaction will have a (different) mean value.
+```{r}
+deconvoluted.txt <- file.path(path.results, "deconvoluted.txt")
+converted.results <- convertResults(significant_means.txt, deconvoluted.txt, compared.celltypes, gene.csv, verbose = T)
+write.table(x = converted.results, file = "results.txt", sep = "\t", quote = F, row.names = F)
+```
+Session info:
+```{r}
+sessionInfo()
+```
