@@ -1,7 +1,7 @@
 # Copyright 2018 Dorin-Mirel Popescu, Peter Vegh, Newcastle University
 # Takes a dataframe (markers) with a 'gene' column containing HGNC gene IDs (i.e. Seurat::FindAllMarkers() output) and returns it with added Entrez ID, Gene name (description), Cluster occurrences, Summary columns.
 # Requires biomaRt, rentrez, jsonlite packages
-markerDescription <- function(markers, verbose=F) {
+markerDescription <- function(markers, verbose = F) {
   # Define subfunction that converts HUGO IDs to Entrez IDs:
   hgncEntrez <- function(hgnc.genes) {
     library(biomaRt)
@@ -14,10 +14,10 @@ markerDescription <- function(markers, verbose=F) {
       }
     }
     gene.ids <- getBM(
-      filters="hgnc_symbol",
-      attributes=c("hgnc_symbol", "entrezgene"),
-      values=unique(hgnc.genes),
-      mart=mart)
+      filters = "hgnc_symbol",
+      attributes = c("hgnc_symbol", "entrezgene"),
+      values = unique(hgnc.genes),
+      mart = mart)
     return(gene.ids)
   }
 
@@ -44,7 +44,7 @@ markerDescription <- function(markers, verbose=F) {
   while (TRUE) {
     stopIndex <- min(startIndex + queryMax, highestIndex)
     if (verbose) {print(paste('Querying', stopIndex, 'genes'))}
-    genes.batch <- entrez_summary(db="gene", id=genelist$entrezgene[startIndex:stopIndex], always_return_list=T)
+    genes.batch <- entrez_summary(db = "gene", id = genelist$entrezgene[startIndex:stopIndex], always_return_list = T)
     summaries.batch <- extract_from_esummary(genes.batch, "summary")
     descriptions.batch <- extract_from_esummary(genes.batch, "description")
     summaries <- c(summaries, summaries.batch)
@@ -71,11 +71,11 @@ markerDescription <- function(markers, verbose=F) {
   # Calculate occurrences:
   countClusters <- function(gene.name, clusters, genes) {
     poss <- clusters[genes == gene.name]
-    return(paste(poss, collapse=","))
+    return(paste(poss, collapse = ","))
   }
   # identify clusters for each marker genes
   unsym <- as.vector(unique(markers$gene))
-  unsym.count <- lapply(unsym, countClusters, clusters=markers$cluster, genes=markers$gene)
+  unsym.count <- lapply(unsym, countClusters, clusters = markers$cluster, genes = markers$gene)
   unsym.count <- unlist(unsym.count)
   names(unsym.count) <- unsym
   poss <- match(markers$gene, names(unsym.count))
