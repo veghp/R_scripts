@@ -2,8 +2,7 @@
 path.seuratobject <- "" # string. Path to Seurat object file
 annotation <- "" # string. Seuratobject metadata column name
 celltypes <- NULL # string vector. Export cells of these annotation labels. If NULL, export all cells in metadata.
-metadata.filename <- "" # metadata export filename
-count.filename <- "" # count export filename
+filename.prefix <- "export_" # string. count and metadata export filename prefix
 gene.csv <- "" # path to gene.csv downloaded from https://www.cellphonedb.org/downloads/gene.csv
 ###############################################################################
 library(Seurat)
@@ -23,7 +22,7 @@ if(is.null(celltypes)) {
 }
 
 metadata <- data.frame(Cell = cells, cell_type = metadata[cells, annotation]) # string "cell_type" is required by CellPhoneDB
-write.table(metadata, file = metadata.filename, row.names = FALSE, quote = F, sep = "\t")
+write.table(metadata, file = paste0(filename.prefix, "metadata.txt"), row.names = FALSE, quote = F, sep = "\t")
 
 # Export count data for CellPhoneDB:
 ####################################
@@ -48,4 +47,4 @@ cpm <- cpm * 10000
 rm(counts)
 # Export
 data <- cbind("Gene" = ens.rownames, cpm)
-write.table(data, count.filename, row.names = FALSE, quote = F, sep = "\t")
+write.table(data, paste0(filename.prefix, "counts.txt"), row.names = FALSE, quote = F, sep = "\t")
