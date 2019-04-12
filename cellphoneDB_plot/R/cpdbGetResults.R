@@ -40,8 +40,8 @@ cpdbGetResults <- function(significant_means.txt, converted.pvalues, compared.ce
     C2_C1_column <- C2_C1_column[2:nrow(C2_C1_column), ]
     C2_C1_column <- C2_C1_column[!(is.na(C2_C1_column$means)), ]
 
-
-    for(i in 1:length(C2_C1_column$interactions)) {
+    if(length(C2_C1_column$interactions) != 0) { # if dataframe is empty, do not run below gene-lookup loop. length can't be negative.
+      for(i in 1:length(C2_C1_column$interactions)) {
       # lookup r and l by uniprot name in gene.csv
       gene1 <- C2_C1_column$partner_a[i]
       gene1 <- sub("simple:", "", gene1)
@@ -60,20 +60,23 @@ cpdbGetResults <- function(significant_means.txt, converted.pvalues, compared.ce
         # else name remains
       }
       C2_C1_column$interactions[i] <- paste0(gene2, "_", gene1)
+      }
     }
     C2_C1_column <- C2_C1_column[ -c(2, 3) ]
 
     # One list for each cell-pair:
-    C1_C2_combined <- rbind(C1_C2_column, C2_C1_column)
+    C1_C2_combined <- rbind(C1_C2_column, C2_C1_column) # If either is empty, then it's fine. Case where both empty is handled below
 
     v.size <- length(cellpairs.results)
-    for(i in 1:length(C1_C2_combined$interactions)) {
-      # Deconvolution step skipped. Dataframe will be compiled from these vectors:
-      cellpairs.results[v.size + i] <- C1_C2
-      interaction.results[v.size + i] <- C1_C2_combined$interactions[i]
-      means.results[v.size + i] <- C1_C2_combined$means[i]
-
-     }
+    if(length(C1_C2_combined$interactions) != 0) { # if empty, then skip and do not add anything to the interaction list.
+      for(i in 1:length(C1_C2_combined$interactions)) {
+        # Deconvolution step skipped. Dataframe will be compiled from these vectors:
+        cellpairs.results[v.size + i] <- C1_C2
+        interaction.results[v.size + i] <- C1_C2_combined$interactions[i]
+        means.results[v.size + i] <- C1_C2_combined$means[i]
+  
+      }
+    }
 
   }
 
