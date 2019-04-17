@@ -15,6 +15,7 @@ source(file.path(path.functions, "rlTableFromVectors.R"))
 source(file.path(path.functions, "cpdbConvertPvalues.R"))
 source(file.path(path.functions, "cpdbGetResults.R"))
 source(file.path(path.functions, "plotInteractions.R"))
+source(file.path(path.functions, "plotInteractions2.R"))
 source(file.path(path.functions, "convertResults.R"))
 ```
 
@@ -58,6 +59,47 @@ deconvoluted.txt <- file.path(path.results, "deconvoluted.txt")
 converted.results <- convertResults(significant_means.txt, deconvoluted.txt, compared.celltypes, gene.csv, verbose = T)
 write.table(x = converted.results, file = "results.txt", sep = "\t", quote = F, row.names = F)
 ```
+
+Subset results:
+```{r}
+cpdb.results.subset <- cpdb.results[cpdb.results$Cellpairs %in% c("Tcells_Myeloid", "Myeloid_Tcells", "Tcells_NKcells_0", "NKcells_0_Tcells"), ]
+
+interactions.filter <- rev(c(
+  "a1b1 complex_COL18A1",
+  "FN1_a4b1 complex",
+  "MRC1_PTPRC",
+  "PLAUR_a4b1 complex",
+  "CD58_CD2",
+  "CD44_SPP1",
+  "LTB_LTBR",
+  "CD2_CD58",
+  "TNFRSF1A_TNF"))
+
+cpdb.results.subset <- cpdb.results.subset[cpdb.results.subset$Interactions %in% interactions.filter, ]
+cpdb.results.subset$Interactions <- factor(cpdb.results.subset$Interactions, levels = interactions.filter)
+
+p2 <- plotInteractions(cpdb.results.subset)
+
+width <- 200 + 15 * length(unique(cpdb.results.subset$Cellpairs))
+height <- 150 + 14 * length(unique(cpdb.results.subset$Interactions))
+
+png(filename = "interactions_subset.png", width = width, height = height)
+p2
+dev.off()
+p2
+```
+
+Alternative plot format:
+```{r}
+p3 <- plotInteractions2(cpdb.results.subset)
+png(filename = "interactions_subset2.png", width = width, height = height)
+p3
+dev.off()
+saveRDS(cpdb.results.subset, file = "cpdb.results.subset.RDS")
+saveRDS(p3, file = "plot.RDS")
+p3
+```
+
 Session info:
 ```{r}
 sessionInfo()
