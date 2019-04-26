@@ -15,7 +15,6 @@ source(file.path(path.functions, "rlTableFromVectors.R"))
 source(file.path(path.functions, "cpdbConvertPvalues.R"))
 source(file.path(path.functions, "cpdbGetResults.R"))
 source(file.path(path.functions, "plotInteractions.R"))
-source(file.path(path.functions, "plotInteractions2.R"))
 source(file.path(path.functions, "convertResults.R"))
 ```
 
@@ -91,7 +90,7 @@ p2
 
 Alternative plot format:
 ```{r}
-p3 <- plotInteractions2(cpdb.results.subset)
+p3 <- plotInteractions(cpdb.results.subset, type = 2)
 png(filename = "interactions_subset2.png", width = width, height = height)
 p3
 dev.off()
