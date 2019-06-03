@@ -16,6 +16,7 @@ exportSeurat <- function(seuratobject, fileprefix = "export_", overwrite = F) {
   write(colnames(seuratobject@raw.data), file = filenames[2])
   write.table(seuratobject@meta.data,
     file = filenames[3], row.names = T, col.names = T, sep = "\t", quote = F)
-  writeMM(seuratobject@raw.data, file=filenames[4])
+  out.mtx <- t(seuratobject@raw.data)
+  writeMM(out.mtx, file=filenames[4])
 
 }
